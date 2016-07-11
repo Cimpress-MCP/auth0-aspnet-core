@@ -1,0 +1,37 @@
+﻿{
+    "version": "0.0.1",
+    "title": ".Net Server Libraries for Auth0",
+    "description": ".Net Server Libraries for Auth0",
+    "authors": [
+        "Markus Thurner",
+        "Amanda Lobel"
+    ],
+    "packOptions": {
+        "tags": [
+            "Auth0",
+            "OAuth",
+            "identity",
+            "OpenAuth"
+        ],
+        "owners": [
+            "Cimpress"
+        ],
+        "projectUrl": "https://github.com/Cimpress-MCP/auth0-aspnet-core",
+        "licenseUrl": "https://opensource.org/licenses/MIT"
+    },
+
+    "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
+        "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0",
+        "Microsoft.Extensions.Logging": "1.0.0",
+        "System.Net.Http": "4.1.0"
+    },
+
+    "frameworks": {
+        "netstandard1.3": {
+            "imports": "dnxcore50"
+        }
+    }
+}
