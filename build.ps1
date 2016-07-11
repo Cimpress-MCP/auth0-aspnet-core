@@ -37,7 +37,7 @@ Push-Location $PSScriptRoot
 if(Test-Path .\artifacts) { Remove-Item .\artifacts -Force -Recurse }
 
 # Package restore
-& dotnet restore
+& dotnet restore --configfile ./nuget.config
 
 # Build/package
 Get-ChildItem -Path .\src -Filter *.xproj -Recurse | ForEach-Object { Build-Projects $_.DirectoryName }
