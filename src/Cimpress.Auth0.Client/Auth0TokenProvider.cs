@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cimpress.Auth0.Client.Proxies;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Cimpress.Auth0.Client

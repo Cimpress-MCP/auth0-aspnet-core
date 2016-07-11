@@ -25,8 +25,7 @@
         "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
         "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0",
         "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0",
-        "Microsoft.Extensions.Logging": "1.0.0",
-        "System.Net.Http": "4.1.0"
+        "Microsoft.Extensions.Logging": "1.0.0"
     },
 
     "frameworks": {
