@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Cimpress.Auth0.Client
 {
-    public static class HttpResponseMessageExtensions
+    internal static class HttpResponseMessageExtensions
     {
-        internal static async Task LogAndThrowIfNotSuccessStatusCode(this HttpResponseMessage message, ILogger logger)
+        internal static async Task ThrowIfNotSuccessStatusCode(this HttpResponseMessage message)
         {
             if (!message.IsSuccessStatusCode)
             {
-                var formattedMsg = await message.LogMessage(logger);
+                var formattedMsg = await FormatErrorMessage(message);
                 throw new Exception(formattedMsg);
             }
         }
 
-        private static async Task<string> LogMessage(this HttpResponseMessage message, ILogger logger)
+        private static async Task<string> FormatErrorMessage(this HttpResponseMessage message)
         {
             var msg = await message.Content.ReadAsStringAsync();
-            var formattedMsg =
-                $"Error processing request. Status code was {message.StatusCode} when calling '{message.RequestMessage.RequestUri}', message was '{msg}'";
-            logger.LogError(formattedMsg);
+            var formattedMsg = $"Error processing request. Status code was {message.StatusCode} when calling '{message.RequestMessage.RequestUri}', message was '{msg}'";
             return formattedMsg;
         }
     }

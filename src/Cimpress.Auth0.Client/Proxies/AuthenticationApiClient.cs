@@ -61,7 +61,7 @@ namespace Cimpress.Auth0.Client.Proxies
             var response = await httpClient.PostAsync(resource, content);
 
             // Handle API errors
-            await response.LogAndThrowIfNotSuccessStatusCode(null);
+            await response.ThrowIfNotSuccessStatusCode();
 
             // Deserialize the content
             string result = await response.Content.ReadAsStringAsync();
