@@ -13,6 +13,7 @@ namespace Cimpress.Auth0.Client
 {
     public class Auth0TokenProvider : IAuth0TokenProvider
     {
+        private readonly IAuthenticationApiClient authenticationApiClient;
         private readonly ConcurrentDictionary<string, Auth0ClientSettings> clientTokenCache;
         private readonly ConcurrentDictionary<string, string> domainClientIdCache;
         private readonly string defaultUsername;
@@ -28,8 +29,10 @@ namespace Cimpress.Auth0.Client
         /// </summary>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="defaultSettings">The settings.</param>
-        public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings)
+        /// <param name="authenticationApiClient">The optional AuthenticationApiClient to use. Usually not required to use the built-in client.</param>
+        public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null)
         {
+            this.authenticationApiClient = authenticationApiClient ?? new AuthenticationApiClient();
             clientTokenCache = new ConcurrentDictionary<string, Auth0ClientSettings>();
             domainClientIdCache = new ConcurrentDictionary<string, string>();
             logger = loggerFactory.CreateLogger<Auth0TokenProvider>();
@@ -220,12 +223,10 @@ namespace Cimpress.Auth0.Client
                         return;
                     }
 
-                    var c = new AuthenticationApiClient(new Uri(clientTokenCache[clientId].Auth0ServerUrl));
-
                     var refreshRequest = new RefreshTokenDelegationRequestDto(clientId, clientId, clientTokenCache[clientId].Auth0RefreshToken);
 
                     // authenticate with auth0
-                    var authToken = await c.GetDelegationTokenAsync(refreshRequest);
+                    var authToken = await authenticationApiClient.GetDelegationTokenAsync(refreshRequest, clientTokenCache[clientId].Auth0ServerUrl);
 
                     // set the authorization header
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
@@ -279,7 +280,6 @@ namespace Cimpress.Auth0.Client
                         return;
                     }
 
-                    var c = new AuthenticationApiClient(new Uri(clientTokenCache[clientId].Auth0ServerUrl));
                     var request = new AuthenticationRequestDto
                     {
                         ClientId = clientId, // client ID from bucket service Auth0 app
@@ -292,7 +292,7 @@ namespace Cimpress.Auth0.Client
                     };
 
                     // authenticate with auth0
-                    var authToken = await c.AuthenticateAsync(request);
+                    var authToken = await authenticationApiClient.AuthenticateAsync(request, clientTokenCache[clientId].Auth0ServerUrl);
 
                     // set the authorization header
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
