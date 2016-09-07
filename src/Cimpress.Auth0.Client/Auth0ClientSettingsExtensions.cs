@@ -9,7 +9,8 @@
                 Auth0ClientId = serviceSettings.Auth0ClientId,
                 Auth0RefreshToken = serviceSettings.Auth0RefreshToken,
                 Auth0Password = serviceSettings.Auth0Password,
-                Auth0Username = serviceSettings.Auth0User
+                Auth0Username = serviceSettings.Auth0User,
+                AutoRefreshAfter = serviceSettings.AutoRefreshAfter
             };
         }
     }

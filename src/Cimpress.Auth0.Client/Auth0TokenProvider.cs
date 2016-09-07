@@ -231,6 +231,8 @@ namespace Cimpress.Auth0.Client
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
                     clientTokenCache[clientId].LastRefresh = DateTime.Now;
                     logger.LogInformation($"Successfully authenticated with the service client id {clientId} with refresh token.");
+
+                    ScheduleAutoRefresh(clientTokenCache[clientId]);
                 }
                 catch (Exception ex)
                 {
@@ -296,6 +298,8 @@ namespace Cimpress.Auth0.Client
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
                     clientTokenCache[clientId].LastRefresh = DateTime.Now;
                     logger.LogInformation($"Successfully authenticated with the service client id {clientId} with username and password.");
+
+                    ScheduleAutoRefresh(clientTokenCache[clientId]);
                 }
                 catch (Exception ex)
                 {
@@ -311,6 +315,33 @@ namespace Cimpress.Auth0.Client
             {
                 logger.LogWarning("Auth0TokenProvider could not get lock for retrieving an authentication token.");
             }
+        }
+
+        private void ScheduleAutoRefresh(Auth0ClientSettings auth0ClientSettings)
+        {
+            // do not auto-refresh 
+            if (auth0ClientSettings.AutoRefreshAfter <= TimeSpan.Zero)
+            {
+                logger.LogDebug($"Not scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} " +
+                                $"and auto-refresh settings {auth0ClientSettings.AutoRefreshAfter}.");
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    logger.LogInformation($"Scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} in {auth0ClientSettings.AutoRefreshAfter}.");
+                    // wait for the specified time
+                    await Task.Delay(auth0ClientSettings.AutoRefreshAfter);
+                    await UpdateAuthHeaderAsync(auth0ClientSettings.Auth0ClientId);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(0, ex, $"Error while refreshing the Bearer token for client_id {auth0ClientSettings.Auth0ClientId}. Triggering next schedule.");
+                    ScheduleAutoRefresh(auth0ClientSettings);
+                }
+            });
         }
 
         private Auth0ClientSettings GetSettingsFromResponseHeader(HttpHeaderValueCollection<AuthenticationHeaderValue> wwwAuthenticationHeaderValues)

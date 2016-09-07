@@ -71,5 +71,13 @@ namespace Cimpress.Auth0.Client
         /// The last time the token was refreshed.
         /// </value>
         public DateTime LastRefresh { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time span after which the Bearer token should be refreshed.
+        /// </summary>
+        /// <value>
+        /// The time span after which the token should be automatically refreshed. Must be larger than TimeSpan.Zero to trigger a refresh.
+        /// </value>
+        public TimeSpan AutoRefreshAfter { get; set; } = TimeSpan.MinValue;
     }
 }
