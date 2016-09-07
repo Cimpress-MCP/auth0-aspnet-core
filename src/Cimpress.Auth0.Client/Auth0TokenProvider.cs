@@ -21,10 +21,12 @@ namespace Cimpress.Auth0.Client
         private readonly string defaultPassword;
         private readonly string defaultDomain;
         private readonly string defaultConnection;
+        private readonly string defaultRefreshToken;
+        private readonly TimeSpan defaultAutoRefreshAfter;
 
         private readonly ILogger logger;
         private readonly SemaphoreSlim syncObject = new SemaphoreSlim(1);
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Auth0TokenProvider" /> class.
         /// </summary>
@@ -34,7 +36,7 @@ namespace Cimpress.Auth0.Client
         /// <param name="autoScheduler">The auto-scheduler that refreshes the Auth0 token after X minutes.</param>
         public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null, IAutoScheduler autoScheduler = null)
         {
-            this.autoScheduler = autoScheduler;
+            this.autoScheduler = autoScheduler ?? new AutoScheduler(loggerFactory, this);
             this.authenticationApiClient = authenticationApiClient ?? new AuthenticationApiClient();
             clientTokenCache = new ConcurrentDictionary<string, Auth0ClientSettings>();
             domainClientIdCache = new ConcurrentDictionary<string, string>();
@@ -43,6 +45,8 @@ namespace Cimpress.Auth0.Client
             defaultPassword = defaultSettings.Auth0Password;
             defaultUsername = defaultSettings.Auth0Username;
             defaultConnection = defaultSettings.Auth0Connection;
+            defaultRefreshToken = defaultSettings.Auth0RefreshToken;
+            defaultAutoRefreshAfter = defaultSettings.AutoRefreshAfter;
         }
 
         /// <summary>
@@ -64,19 +68,15 @@ namespace Cimpress.Auth0.Client
         /// </summary>
         public void CacheAuthSettings(Auth0ClientSettings settings)
         {
-            settings.Auth0Username = string.IsNullOrWhiteSpace(settings.Auth0Username)
-                ? defaultUsername
-                : settings.Auth0Username;
-            settings.Auth0Password = string.IsNullOrWhiteSpace(settings.Auth0Password)
-                ? defaultPassword
-                : settings.Auth0Password;
-            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl)
-                ? defaultDomain
-                : settings.Auth0ServerUrl;
-            settings.Auth0Connection = string.IsNullOrWhiteSpace(settings.Auth0Connection)
-                ? defaultConnection
-                : settings.Auth0Connection;
-            settings.Auth0RefreshToken = settings.Auth0RefreshToken;
+            // apply defaults
+            settings.Auth0Username = string.IsNullOrWhiteSpace(settings.Auth0Username) ? defaultUsername : settings.Auth0Username;
+            settings.Auth0Password = string.IsNullOrWhiteSpace(settings.Auth0Password) ? defaultPassword : settings.Auth0Password;
+            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl) ? defaultDomain : settings.Auth0ServerUrl;
+            settings.Auth0Connection = string.IsNullOrWhiteSpace(settings.Auth0Connection) ? defaultConnection : settings.Auth0Connection;
+            settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken) ? defaultRefreshToken : settings.Auth0RefreshToken;
+            settings.AutoRefreshAfter = settings.AutoRefreshAfter == TimeSpan.MinValue ? defaultAutoRefreshAfter : settings.AutoRefreshAfter;
+
+            // cache settings
             clientTokenCache.TryAdd(settings.Auth0ClientId, settings);
         }
 
