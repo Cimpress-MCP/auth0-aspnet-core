@@ -13,6 +13,7 @@ namespace Cimpress.Auth0.Client
 {
     public class Auth0TokenProvider : IAuth0TokenProvider
     {
+        private readonly IAutoScheduler autoScheduler;
         private readonly IAuthenticationApiClient authenticationApiClient;
         private readonly ConcurrentDictionary<string, Auth0ClientSettings> clientTokenCache;
         private readonly ConcurrentDictionary<string, string> domainClientIdCache;
@@ -30,8 +31,10 @@ namespace Cimpress.Auth0.Client
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="defaultSettings">The settings.</param>
         /// <param name="authenticationApiClient">The optional AuthenticationApiClient to use. Usually not required to use the built-in client.</param>
-        public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null)
+        /// <param name="autoScheduler">The auto-scheduler that refreshes the Auth0 token after X minutes.</param>
+        public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null, IAutoScheduler autoScheduler = null)
         {
+            this.autoScheduler = autoScheduler;
             this.authenticationApiClient = authenticationApiClient ?? new AuthenticationApiClient();
             clientTokenCache = new ConcurrentDictionary<string, Auth0ClientSettings>();
             domainClientIdCache = new ConcurrentDictionary<string, string>();
@@ -319,29 +322,7 @@ namespace Cimpress.Auth0.Client
 
         private void ScheduleAutoRefresh(Auth0ClientSettings auth0ClientSettings)
         {
-            // do not auto-refresh 
-            if (auth0ClientSettings.AutoRefreshAfter <= TimeSpan.Zero)
-            {
-                logger.LogDebug($"Not scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} " +
-                                $"and auto-refresh settings {auth0ClientSettings.AutoRefreshAfter}.");
-                return;
-            }
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    logger.LogInformation($"Scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} in {auth0ClientSettings.AutoRefreshAfter}.");
-                    // wait for the specified time
-                    await Task.Delay(auth0ClientSettings.AutoRefreshAfter);
-                    await UpdateAuthHeaderAsync(auth0ClientSettings.Auth0ClientId);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(0, ex, $"Error while refreshing the Bearer token for client_id {auth0ClientSettings.Auth0ClientId}. Triggering next schedule.");
-                    ScheduleAutoRefresh(auth0ClientSettings);
-                }
-            });
+            autoScheduler.ScheduleRefresh(auth0ClientSettings);
         }
 
         private Auth0ClientSettings GetSettingsFromResponseHeader(HttpHeaderValueCollection<AuthenticationHeaderValue> wwwAuthenticationHeaderValues)

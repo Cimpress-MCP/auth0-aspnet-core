@@ -17,3 +17,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("b102748c-01e5-4bd7-8fa5-db82c238c89b")]
+
+[assembly: InternalsVisibleTo("Cimpress.Auth0.Client.UnitTests")]
