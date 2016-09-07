@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,37 +12,38 @@ namespace Cimpress.Auth0.Client.Proxies
     /// Full documentation for the Authentication API is available at https://auth0.com/docs/auth-api
     /// This has been copied and slightly adapterd from https://github.com/auth0/auth0.net since it doesn't yet support netcore.
     /// </remarks>
-    public class AuthenticationApiClient
+    public class AuthenticationApiClient : IAuthenticationApiClient
     {
         private readonly HttpClient httpClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationApiClient" /> class.
         /// </summary>
-        /// <param name="baseUri">The base URI.</param>
-        public AuthenticationApiClient(Uri baseUri)
+        public AuthenticationApiClient()
         {
-            httpClient = new HttpClient { BaseAddress = baseUri };
+            httpClient = new HttpClient();
         }
-        
+
         /// <summary>
         /// Given an <see cref="AuthenticationRequestDto" />, it will do the authentication on the provider and return a <see cref="AuthenticationResponseDto" />
         /// </summary>
         /// <param name="request">The authentication request details containing information regarding the connection, username, password etc.</param>
+        /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
         /// <returns>A <see cref="AuthenticationResponseDto" /> with the access token.</returns>
-        public Task<AuthenticationResponseDto> AuthenticateAsync(AuthenticationRequestDto request)
+        public Task<AuthenticationResponseDto> AuthenticateAsync(AuthenticationRequestDto request, string auth0Domain)
         {
-            return PostAsync<AuthenticationResponseDto>("/oauth/ro", request);
+            return PostAsync<AuthenticationResponseDto>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "oauth/ro", request);
         }
 
         /// <summary>
         /// Given an existing token, this endpoint will generate a new token signed with the target client secret. This is used to flow the identity of the user from the application to an API or across different APIs that are protected with different secrets.
         /// </summary>
         /// <param name="request">The <see cref="DelegationRequestBaseDto" /> containing details about the request.</param>
+        /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
         /// <returns>The <see cref="AccessToken" />.</returns>
-        public Task<AccessToken> GetDelegationTokenAsync(DelegationRequestBaseDto request)
+        public Task<AccessToken> GetDelegationTokenAsync(DelegationRequestBaseDto request, string auth0Domain)
         {
-            return PostAsync<AccessToken>("/delegation", request);
+            return PostAsync<AccessToken>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "delegation", request);
         }
 
         /// <summary>

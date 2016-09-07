@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 using FluentAssertions;
 
 namespace Cimpress.Auth0.Client.UnitTests
@@ -8,7 +9,7 @@ namespace Cimpress.Auth0.Client.UnitTests
         [Fact]
         public void SettingsMapper_when_mapping_UsernamePassword()
         {
-            var clientSettings = new ServiceSettings()
+            var clientSettings = new ServiceSettings
             {
                 Auth0ClientId = "auth0ClientId",
                 Auth0Password = "auth0Password",
@@ -23,7 +24,7 @@ namespace Cimpress.Auth0.Client.UnitTests
         [Fact]
         public void SettingsMapper_when_mapping_RefreshToken()
         {
-            var clientSettings = new ServiceSettings()
+            var clientSettings = new ServiceSettings
             {
                 Auth0ClientId = "auth0ClientId",
                 Auth0RefreshToken = "auth0RefreshToken"
@@ -31,6 +32,17 @@ namespace Cimpress.Auth0.Client.UnitTests
             var auth0Settings = clientSettings.ToAuth0ClientSettings();
             clientSettings.Auth0ClientId.Should().Be(auth0Settings.Auth0ClientId);
             clientSettings.Auth0RefreshToken.Should().Be(auth0Settings.Auth0RefreshToken);
+        }
+
+        [Fact]
+        public void SettingsMapper_when_mapping_AutoRefreshAfter()
+        {
+            var clientSettings = new ServiceSettings
+            {
+                AutoRefreshAfter = TimeSpan.FromMinutes(new Random().Next(0, 1000))
+            };
+            var auth0Settings = clientSettings.ToAuth0ClientSettings();
+            clientSettings.AutoRefreshAfter.Should().Be(auth0Settings.AutoRefreshAfter);
         }
     }
 }
