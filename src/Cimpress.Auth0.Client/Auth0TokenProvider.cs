@@ -34,7 +34,7 @@ namespace Cimpress.Auth0.Client
         /// <param name="autoScheduler">The auto-scheduler that refreshes the Auth0 token after X minutes.</param>
         public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null, IAutoScheduler autoScheduler = null)
         {
-            this.autoScheduler = autoScheduler;
+            this.autoScheduler = autoScheduler ?? new AutoScheduler(loggerFactory, this);
             this.authenticationApiClient = authenticationApiClient ?? new AuthenticationApiClient();
             clientTokenCache = new ConcurrentDictionary<string, Auth0ClientSettings>();
             domainClientIdCache = new ConcurrentDictionary<string, string>();
