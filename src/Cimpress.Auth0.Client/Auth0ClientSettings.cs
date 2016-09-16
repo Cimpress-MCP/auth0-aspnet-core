@@ -70,7 +70,7 @@ namespace Cimpress.Auth0.Client
         /// <value>
         /// The last time the token was refreshed.
         /// </value>
-        public DateTime LastRefresh { get; set; }
+        public DateTimeOffset LastRefresh { get; set; }
 
         /// <summary>
         /// Gets or sets the time span after which the Bearer token should be refreshed.
