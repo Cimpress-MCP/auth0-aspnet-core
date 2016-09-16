@@ -221,7 +221,7 @@ namespace Cimpress.Auth0.Client
                     // Especially when multiple tasks are invoked at the same time we only need to update once.
                     // Testing for a valid token happens within GetAuthHeaderForClient but outside of the locked section.
                     // Therefore it might happen that the token was already updated once entering the locked section.
-                    if (clientTokenCache[clientId].LastRefresh > DateTime.Now.AddSeconds(-5) && !forceRefresh)
+                    if (clientTokenCache[clientId].LastRefresh > DateTimeOffset.Now.AddSeconds(-5) && !forceRefresh)
                     {
                         return;
                     }
@@ -233,7 +233,7 @@ namespace Cimpress.Auth0.Client
 
                     // set the authorization header
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
-                    clientTokenCache[clientId].LastRefresh = DateTime.Now;
+                    clientTokenCache[clientId].LastRefresh = DateTimeOffset.Now;
                     logger.LogInformation($"Successfully authenticated with the service client id {clientId} with refresh token.");
 
                     ScheduleAutoRefresh(clientTokenCache[clientId]);
@@ -278,7 +278,7 @@ namespace Cimpress.Auth0.Client
                     // Especially when multiple tasks are invoked at the same time we only need to update once.
                     // Testing for a valid token happens within GetAuthHeaderForClient but outside of the locked section.
                     // Therefore it might happen that the token was already updated once entering the locked section.
-                    if (clientTokenCache[clientId].LastRefresh > DateTime.Now.AddSeconds(-5) && !forceRefresh)
+                    if (clientTokenCache[clientId].LastRefresh > DateTimeOffset.Now.AddSeconds(-5) && !forceRefresh)
                     {
                         return;
                     }
@@ -299,7 +299,7 @@ namespace Cimpress.Auth0.Client
 
                     // set the authorization header
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
-                    clientTokenCache[clientId].LastRefresh = DateTime.Now;
+                    clientTokenCache[clientId].LastRefresh = DateTimeOffset.Now;
                     logger.LogInformation($"Successfully authenticated with the service client id {clientId} with username and password.");
 
                     ScheduleAutoRefresh(clientTokenCache[clientId]);

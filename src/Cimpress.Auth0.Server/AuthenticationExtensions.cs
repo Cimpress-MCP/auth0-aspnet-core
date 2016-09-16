@@ -181,7 +181,7 @@ namespace Cimpress.Auth0.Server
                 {
                     HttpOnly = true,
                     Secure = context.Request.IsHttps,
-                    Expires = DateTime.UtcNow + middlewareOptions.ProtocolValidator.NonceLifetime
+                    Expires = DateTimeOffset.UtcNow + middlewareOptions.ProtocolValidator.NonceLifetime
                 });
 
             // Prepare state.
@@ -216,7 +216,7 @@ namespace Cimpress.Auth0.Server
             {
                 HttpOnly = true,
                 Secure = context.Request.IsHttps,
-                Expires = DateTime.UtcNow + options.ProtocolValidator.NonceLifetime
+                Expires = DateTimeOffset.UtcNow + options.ProtocolValidator.NonceLifetime
             };
 
             properties.Items[CorrelationProperty] = correlationId;
