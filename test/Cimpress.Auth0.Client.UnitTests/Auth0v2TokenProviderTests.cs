@@ -8,13 +8,13 @@ using Moq;
 
 namespace Cimpress.Auth0.Client.UnitTests
 {
-    public class Auth0TokenProviderTests
+    public class Auth0V2TokenProviderTests
     {
         private readonly Mock<ILoggerFactory> loggerFactor;
         private readonly Mock<ILogger> logger;
         private readonly Mock<IAutoScheduler> autoScheduler;
 
-        public Auth0TokenProviderTests()
+        public Auth0V2TokenProviderTests()
         {
             loggerFactor = new Mock<ILoggerFactory>(MockBehavior.Strict);
             logger = new Mock<ILogger>(MockBehavior.Loose);
@@ -32,7 +32,7 @@ namespace Cimpress.Auth0.Client.UnitTests
             apiClient.Setup(ac => ac.GetDelegationTokenAsync(It.IsAny<RefreshTokenDelegationRequestDto>(), auth0serverUrl))
                 .Callback((DelegationRequestBaseDto token, string server) => delegationRequest = token as RefreshTokenDelegationRequestDto)
                 .Returns(Task.FromResult(new AccessToken { IdToken = Guid.NewGuid().ToString() }));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings {Auth0ServerUrl = auth0serverUrl}, apiClient.Object, autoScheduler.Object);
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings {Auth0ServerUrl = auth0serverUrl}, apiClient.Object, autoScheduler.Object);
             var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0RefreshToken = Guid.NewGuid().ToString() };
 
             // execute
@@ -45,36 +45,33 @@ namespace Cimpress.Auth0.Client.UnitTests
             delegationRequest.SourceClientId.Should().Be(auth0ClientSettings.Auth0ClientId);
             delegationRequest.TargetClientId.Should().Be(auth0ClientSettings.Auth0ClientId);
         }
-        
+
         [Fact]
-        public async Task Updates_with_username_and_password()
+        public async Task Updates_with_client_secret()
         {
             // setup
             var auth0serverUrl = "https://localhost";
             var auth0Connection = "unit-test-connection";
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
-            RoAuthenticationRequestDto authRequest = null;
-            apiClient.Setup(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), auth0serverUrl))
-                .Callback((RoAuthenticationRequestDto token, string server) => authRequest = token)
-                .Returns(Task.FromResult(new AuthenticationResponseDto { IdToken = Guid.NewGuid().ToString()}));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings {Auth0ServerUrl = auth0serverUrl, Auth0Connection = auth0Connection}, apiClient.Object, autoScheduler.Object);
-            var auth0ClientSettings = new Auth0ClientSettings {Auth0ClientId = Guid.NewGuid().ToString(), Auth0Username = Guid.NewGuid().ToString(), Auth0Password = Guid.NewGuid().ToString()};
+            TokenAuthenticationRequestDto authRequest = null;
+            apiClient.Setup(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), auth0serverUrl))
+                .Callback((TokenAuthenticationRequestDto token, string server) => authRequest = token)
+                .Returns(Task.FromResult(new AuthenticationResponseDto { IdToken = Guid.NewGuid().ToString() }));
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = auth0serverUrl, Auth0Connection = auth0Connection }, apiClient.Object, autoScheduler.Object);
+            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0ClientSecret = Guid.NewGuid().ToString(), Auth0Audience = Guid.NewGuid().ToString() };
 
             // execute
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings);
 
             // validate
-            apiClient.Verify(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), auth0serverUrl), Times.Once);
+            apiClient.Verify(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), auth0serverUrl), Times.Once);
             Assert.NotNull(authRequest);
             authRequest.ClientId.Should().Be(auth0ClientSettings.Auth0ClientId);
-            authRequest.Username.Should().Be(auth0ClientSettings.Auth0Username);
-            authRequest.Password.Should().Be(auth0ClientSettings.Auth0Password);
-            authRequest.Scope.Should().Be("openid");
-            authRequest.Connection.Should().Be(auth0Connection);
-            authRequest.GrantType.Should().Be("password");
-            authRequest.Device.Should().Be("api");
+            authRequest.ClientSecret.Should().Be(auth0ClientSettings.Auth0ClientSecret);
+            authRequest.Audience.Should().Be(auth0ClientSettings.Auth0Audience);
+            authRequest.GrantType.Should().Be("client_credentials");
         }
-
+        
         [Fact]
         public async Task Does_not_reauthenticate_within_a_short_period_of_time_for_refresh_token()
         {
@@ -82,7 +79,7 @@ namespace Cimpress.Auth0.Client.UnitTests
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
             apiClient.Setup(ac => ac.GetDelegationTokenAsync(It.IsAny<RefreshTokenDelegationRequestDto>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(new AccessToken { IdToken = Guid.NewGuid().ToString() }));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
             var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0RefreshToken = Guid.NewGuid().ToString() };
 
             // execute twice
@@ -100,7 +97,7 @@ namespace Cimpress.Auth0.Client.UnitTests
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
             apiClient.Setup(ac => ac.GetDelegationTokenAsync(It.IsAny<RefreshTokenDelegationRequestDto>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(new AccessToken { IdToken = Guid.NewGuid().ToString()}));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
             var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0RefreshToken = Guid.NewGuid().ToString() };
 
             // execute twice
@@ -112,21 +109,21 @@ namespace Cimpress.Auth0.Client.UnitTests
         }
 
         [Fact]
-        public async Task Does_not_reauthenticate_within_a_short_period_of_time_for_username_password()
+        public async Task Does_not_reauthenticate_within_a_short_period_of_time_for_client_secret()
         {
             // setup
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
-            apiClient.Setup(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), It.IsAny<string>()))
+            apiClient.Setup(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), It.IsAny<string>()))
                  .Returns(Task.FromResult(new AuthenticationResponseDto { IdToken = Guid.NewGuid().ToString() }));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
-            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0Username = Guid.NewGuid().ToString(), Auth0Password = Guid.NewGuid().ToString() };
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
+            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0ClientSecret = Guid.NewGuid().ToString() };
 
             // execute twice
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings);
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings);
 
             // validate that it was called only once
-            apiClient.Verify(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), It.IsAny<string>()), Times.Once);
+            apiClient.Verify(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -134,30 +131,30 @@ namespace Cimpress.Auth0.Client.UnitTests
         {
             // setup
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
-            apiClient.Setup(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), It.IsAny<string>()))
+            apiClient.Setup(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), It.IsAny<string>()))
                  .Returns(Task.FromResult(new AuthenticationResponseDto { IdToken = Guid.NewGuid().ToString() }));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
-            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0Username = Guid.NewGuid().ToString(), Auth0Password = Guid.NewGuid().ToString() };
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, autoScheduler.Object);
+            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0ClientSecret = Guid.NewGuid().ToString() };
 
             // execute twice
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings);
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings, true);
 
             // validate that it was called only once
-            apiClient.Verify(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), It.IsAny<string>()), Times.Exactly(2));
+            apiClient.Verify(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), It.IsAny<string>()), Times.Exactly(2));
         }
 
         [Fact]
-        public async Task Schedules_auto_refresh_for_username_password()
+        public async Task Schedules_auto_refresh_for_client_secret()
         {
             // setup
             var apiClient = new Mock<IAuthenticationApiClient>(MockBehavior.Strict);
-            apiClient.Setup(ac => ac.AuthenticateAsync(It.IsAny<RoAuthenticationRequestDto>(), It.IsAny<string>()))
+            apiClient.Setup(ac => ac.TokenAuthenticateAsync(It.IsAny<TokenAuthenticationRequestDto>(), It.IsAny<string>()))
                  .Returns(Task.FromResult(new AuthenticationResponseDto { IdToken = Guid.NewGuid().ToString() }));
             var scheduler = new Mock<IAutoScheduler>(MockBehavior.Strict);
             scheduler.Setup(s => s.ScheduleRefresh(It.IsAny<Auth0ClientSettings>()));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, scheduler.Object);
-            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0Username = Guid.NewGuid().ToString(), Auth0Password = Guid.NewGuid().ToString() };
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, scheduler.Object);
+            var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0ClientSecret = Guid.NewGuid().ToString() };
 
             // execute twice
             await tokenProvider.AddOrUpdateClientAsync(auth0ClientSettings);
@@ -175,7 +172,7 @@ namespace Cimpress.Auth0.Client.UnitTests
                 .Returns(Task.FromResult(new AccessToken { IdToken = Guid.NewGuid().ToString() }));
             var scheduler = new Mock<IAutoScheduler>(MockBehavior.Strict);
             scheduler.Setup(s => s.ScheduleRefresh(It.IsAny<Auth0ClientSettings>()));
-            var tokenProvider = new Auth0TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, scheduler.Object);
+            var tokenProvider = new Auth0v2TokenProvider(loggerFactor.Object, new Auth0ClientSettings { Auth0ServerUrl = Guid.NewGuid().ToString() }, apiClient.Object, scheduler.Object);
             var auth0ClientSettings = new Auth0ClientSettings { Auth0ClientId = Guid.NewGuid().ToString(), Auth0RefreshToken = Guid.NewGuid().ToString() };
 
             // execute twice

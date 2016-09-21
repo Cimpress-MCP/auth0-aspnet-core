@@ -48,6 +48,23 @@ namespace Cimpress.Auth0.Client
         /// </value>
         public string Auth0Password { get; set; }
 
+        //the black dog institute
+        /// <summary>
+        /// Gets or sets the client secret.
+        /// </summary>
+        /// <value>
+        /// The client secret (replaces a password). 
+        /// </value>
+        public string Auth0ClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audience.
+        /// </summary>
+        /// <value>
+        /// The audience domain.
+        /// </value>
+        public string Auth0Audience { get; set; }
+
         /// <summary>
         /// Gets or sets the auth0 refresh token.
         /// </summary>

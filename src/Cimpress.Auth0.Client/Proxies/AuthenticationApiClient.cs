@@ -25,12 +25,23 @@ namespace Cimpress.Auth0.Client.Proxies
         }
 
         /// <summary>
-        /// Given an <see cref="AuthenticationRequestDto" />, it will do the authentication on the provider and return a <see cref="AuthenticationResponseDto" />
+        /// Given an <see cref="TokenAuthenticationRequestDto" />, it will do the authentication on the provider and return a <see cref="AuthenticationResponseDto" />
+        /// </summary>
+        /// <param name="request">The authentication request details containing information regarding the client details etc.</param>
+        /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
+        /// <returns>A <see cref="AuthenticationResponseDto" /> with the access token.</returns>
+        public Task<AuthenticationResponseDto> TokenAuthenticateAsync(TokenAuthenticationRequestDto request, string auth0Domain)
+        {
+            return PostAsync<AuthenticationResponseDto>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "oauth/token", request);
+        }
+
+        /// <summary>
+        /// Given an <see cref="RoAuthenticationRequestDto" />, it will do the authentication on the provider and return a <see cref="AuthenticationResponseDto" />
         /// </summary>
         /// <param name="request">The authentication request details containing information regarding the connection, username, password etc.</param>
         /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
         /// <returns>A <see cref="AuthenticationResponseDto" /> with the access token.</returns>
-        public Task<AuthenticationResponseDto> AuthenticateAsync(AuthenticationRequestDto request, string auth0Domain)
+        public Task<AuthenticationResponseDto> AuthenticateAsync(RoAuthenticationRequestDto request, string auth0Domain)
         {
             return PostAsync<AuthenticationResponseDto>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "oauth/ro", request);
         }
