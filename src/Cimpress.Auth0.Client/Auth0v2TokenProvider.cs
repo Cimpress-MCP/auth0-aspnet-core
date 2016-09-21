@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Cimpress.Auth0.Client.Proxies;
@@ -8,26 +7,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Cimpress.Auth0.Client
 {
-    public class Auth0TokenProvider : BaseAuth0TokenProvider, IAuth0TokenProvider
+    public class Auth0v2TokenProvider : BaseAuth0TokenProvider, IAuth0TokenProvider
     {
-        internal readonly IAutoScheduler autoScheduler;
-        private readonly string defaultUsername;
-        private readonly string defaultPassword;
-        private readonly string defaultConnection;
+        private readonly IAutoScheduler autoScheduler;
+        private readonly string defaultClientSecret;
+        private readonly string defaultAudience;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Auth0TokenProvider" /> class.
+        /// Initializes a new instance of the <see cref="Auth0v2TokenProvider" /> class.
         /// </summary>
         /// <param name="defaultSettings">The settings.</param>
         /// <param name="autoScheduler">The auto-scheduler that refreshes the Auth0 token after X minutes.</param>
-        public Auth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings,
-            IAuthenticationApiClient authenticationApiClient = null, IAutoScheduler autoScheduler = null)
-            : base(loggerFactory, defaultSettings, authenticationApiClient, autoScheduler)
+        public Auth0v2TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient = null, IAutoScheduler autoScheduler = null) : base(loggerFactory, defaultSettings, authenticationApiClient, autoScheduler)
         {
             this.autoScheduler = autoScheduler ?? new AutoScheduler(loggerFactory, this);
-            defaultPassword = defaultSettings.Auth0Password;
-            defaultUsername = defaultSettings.Auth0Username;
-            defaultConnection = defaultSettings.Auth0Connection;
+            defaultClientSecret = defaultSettings.Auth0ClientSecret;
+            defaultAudience = defaultSettings.Auth0Audience;
         }
 
         public override void ScheduleAutoRefresh(Auth0ClientSettings auth0ClientSettings)
@@ -43,18 +38,15 @@ namespace Cimpress.Auth0.Client
         public override void CacheAuthSettings(Auth0ClientSettings settings)
         {
             // apply defaults
-            settings.Auth0Username = string.IsNullOrWhiteSpace(settings.Auth0Username)
-                ? defaultUsername
-                : settings.Auth0Username;
-            settings.Auth0ClientSecret = string.IsNullOrWhiteSpace(settings.Auth0Password)
-                ? defaultPassword
-                : settings.Auth0Password;
+            settings.Auth0ClientSecret = string.IsNullOrWhiteSpace(settings.Auth0ClientSecret)
+                ? defaultClientSecret
+                : settings.Auth0ClientSecret;
+            settings.Auth0Audience = string.IsNullOrWhiteSpace(settings.Auth0Audience)
+                ? defaultAudience
+                : settings.Auth0Audience;
             settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl)
                 ? defaultDomain
                 : settings.Auth0ServerUrl;
-            settings.Auth0Connection = string.IsNullOrWhiteSpace(settings.Auth0Connection)
-                ? defaultConnection
-                : settings.Auth0Connection;
             settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken)
                 ? defaultRefreshToken
                 : settings.Auth0RefreshToken;
@@ -67,7 +59,6 @@ namespace Cimpress.Auth0.Client
         }
 
         /// <summary>
-        /// Refactoring Auth0TokenProvider functionality to support multiple types.
         /// Updates the auth0 authentication header for the client id using username and password asynchronous.
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
@@ -84,8 +75,7 @@ namespace Cimpress.Auth0.Client
                 {
                     if (!clientTokenCache.ContainsKey(clientId))
                     {
-                        throw new KeyNotFoundException(
-                            $"Cannot update the auth token for client {clientId}, because of missing information.");
+                        throw new KeyNotFoundException($"Cannot update the auth token for client {clientId}, because of missing information.");
                     }
 
                     // Only update if really needed. 
@@ -97,34 +87,28 @@ namespace Cimpress.Auth0.Client
                         return;
                     }
 
-                    var request = new RoAuthenticationRequestDto
+                    var request = new TokenAuthenticationRequestDto
                     {
                         ClientId = clientId, // client ID from bucket service Auth0 app
-                        Username = clientTokenCache[clientId].Auth0Username, // auth0 user
-                        Password = clientTokenCache[clientId].Auth0Password, // the corresponding password
-                        Scope = "openid", // we want openID process
-                        Connection = clientTokenCache[clientId].Auth0Connection, // auth0 connection
-                        GrantType = "password", // it should be granted based on our password
-                        Device = "api" // we want to access an API
+                        ClientSecret = clientTokenCache[clientId].Auth0ClientSecret, // auth0 user
+                        Audience = clientTokenCache[clientId].Auth0Audience, // the corresponding password
+                        GrantType = "client_credentials", // it should be granted based on our password
                     };
 
                     // authenticate with auth0
-                    var authToken =
-                        await
-                            authenticationApiClient.AuthenticateAsync(request, clientTokenCache[clientId].Auth0ServerUrl);
+                    var authToken = await authenticationApiClient.TokenAuthenticateAsync(request, clientTokenCache[clientId].Auth0ServerUrl);
 
                     // set the authorization header
                     clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
                     clientTokenCache[clientId].LastRefresh = DateTimeOffset.Now;
-                    logger.LogInformation($"Successfully authenticated with the service client id {clientId} with username and password.");
-                    ScheduleAutoRefresh(clientTokenCache[clientId]);
+                    logger.LogInformation($"Successfully authenticated with the service client id {clientId} with client secret.");
+
+                    ScheduleAutoRefresh(clientTokenCache[clientId], autoScheduler);
                 }
                 catch (Exception ex)
                 {
                     // any exceptions during authentication are logged here
-                    logger.LogError(
-                        $"Error authenticating with service: {clientId} using user {clientTokenCache[clientId].Auth0Username}.",
-                        ex);
+                    logger.LogError($"Error authenticating with service: {clientId} using user {clientTokenCache[clientId].Auth0Username}.", ex);
                 }
                 finally
                 {
