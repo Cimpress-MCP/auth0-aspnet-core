@@ -23,7 +23,7 @@ namespace Cimpress.Auth0.Client
         public readonly ILogger logger;
         public readonly SemaphoreSlim syncObject = new SemaphoreSlim(1);
 
-        protected BaseAuth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient, IAutoScheduler autoScheduler)
+        protected BaseAuth0TokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings defaultSettings, IAuthenticationApiClient authenticationApiClient)
         {
             this.authenticationApiClient = authenticationApiClient ?? new AuthenticationApiClient();
             clientTokenCache = new ConcurrentDictionary<string, Auth0ClientSettings>();
