@@ -89,10 +89,10 @@ namespace Cimpress.Auth0.Client
 
                     var request = new TokenAuthenticationRequestDto
                     {
-                        ClientId = clientId, // client ID from bucket service Auth0 app
-                        ClientSecret = clientTokenCache[clientId].Auth0ClientSecret, // auth0 user
-                        Audience = clientTokenCache[clientId].Auth0Audience, // the corresponding password
-                        GrantType = "client_credentials", // it should be granted based on our password
+                        ClientId = clientId, // client ID of auth0 app configured to authenticate against target Auth0 API
+                        ClientSecret = clientTokenCache[clientId].Auth0ClientSecret, // auth0 client secret
+                        Audience = clientTokenCache[clientId].Auth0Audience, //audience url 
+                        GrantType = "client_credentials", // it should be granted based on client id/secret
                     };
 
                     // authenticate with auth0
