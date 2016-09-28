@@ -49,5 +49,15 @@ namespace Cimpress.Auth0.Client
         /// Gets or sets the time span after which the Bearer token should be refreshed.
         /// </summary>
         public TimeSpan AutoRefreshAfter { get; set; } = TimeSpan.MinValue;
+
+        /// <summary>
+        /// Gets or sets the client secret.
+        /// </summary>
+        public string Auth0ClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audience type.
+        /// </summary>
+        public string Auth0Audience { get; set; }
     }
 }
