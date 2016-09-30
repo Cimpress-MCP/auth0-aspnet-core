@@ -38,21 +38,11 @@ namespace Cimpress.Auth0.Client
         public override void CacheAuthSettings(Auth0ClientSettings settings)
         {
             // apply defaults
-            settings.Auth0ClientSecret = string.IsNullOrWhiteSpace(settings.Auth0ClientSecret)
-                ? defaultClientSecret
-                : settings.Auth0ClientSecret;
-            settings.Auth0Audience = string.IsNullOrWhiteSpace(settings.Auth0Audience)
-                ? defaultAudience
-                : settings.Auth0Audience;
-            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl)
-                ? defaultDomain
-                : settings.Auth0ServerUrl;
-            settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken)
-                ? defaultRefreshToken
-                : settings.Auth0RefreshToken;
-            settings.AutoRefreshAfter = settings.AutoRefreshAfter == TimeSpan.MinValue
-                ? defaultAutoRefreshAfter
-                : settings.AutoRefreshAfter;
+            settings.Auth0ClientSecret = string.IsNullOrWhiteSpace(settings.Auth0ClientSecret) ? defaultClientSecret : settings.Auth0ClientSecret;
+            settings.Auth0Audience = string.IsNullOrWhiteSpace(settings.Auth0Audience) ? defaultAudience : settings.Auth0Audience;
+            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl) ? defaultDomain : settings.Auth0ServerUrl;
+            settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken) ? defaultRefreshToken : settings.Auth0RefreshToken;
+            settings.AutoRefreshAfter = settings.AutoRefreshAfter == TimeSpan.MinValue ? defaultAutoRefreshAfter : settings.AutoRefreshAfter;
 
             // cache settings
             clientTokenCache.TryAdd(settings.Auth0ClientId, settings);
@@ -99,7 +89,7 @@ namespace Cimpress.Auth0.Client
                     var authToken = await authenticationApiClient.TokenAuthenticateAsync(request, clientTokenCache[clientId].Auth0ServerUrl);
 
                     // set the authorization header
-                    clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.IdToken);
+                    clientTokenCache[clientId].Auth0HeaderValue = new AuthenticationHeaderValue("Bearer", authToken.AccessToken);
                     clientTokenCache[clientId].LastRefresh = DateTimeOffset.Now;
                     logger.LogInformation($"Successfully authenticated with the service client id {clientId} with client secret.");
 
