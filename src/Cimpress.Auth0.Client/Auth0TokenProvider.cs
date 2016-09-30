@@ -43,24 +43,12 @@ namespace Cimpress.Auth0.Client
         public override void CacheAuthSettings(Auth0ClientSettings settings)
         {
             // apply defaults
-            settings.Auth0Username = string.IsNullOrWhiteSpace(settings.Auth0Username)
-                ? defaultUsername
-                : settings.Auth0Username;
-            settings.Auth0ClientSecret = string.IsNullOrWhiteSpace(settings.Auth0Password)
-                ? defaultPassword
-                : settings.Auth0Password;
-            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl)
-                ? defaultDomain
-                : settings.Auth0ServerUrl;
-            settings.Auth0Connection = string.IsNullOrWhiteSpace(settings.Auth0Connection)
-                ? defaultConnection
-                : settings.Auth0Connection;
-            settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken)
-                ? defaultRefreshToken
-                : settings.Auth0RefreshToken;
-            settings.AutoRefreshAfter = settings.AutoRefreshAfter == TimeSpan.MinValue
-                ? defaultAutoRefreshAfter
-                : settings.AutoRefreshAfter;
+            settings.Auth0Username = string.IsNullOrWhiteSpace(settings.Auth0Username) ? defaultUsername : settings.Auth0Username;
+            settings.Auth0Password = string.IsNullOrWhiteSpace(settings.Auth0Password) ? defaultPassword : settings.Auth0Password;
+            settings.Auth0ServerUrl = string.IsNullOrWhiteSpace(settings.Auth0ServerUrl) ? defaultDomain : settings.Auth0ServerUrl;
+            settings.Auth0Connection = string.IsNullOrWhiteSpace(settings.Auth0Connection) ? defaultConnection : settings.Auth0Connection;
+            settings.Auth0RefreshToken = string.IsNullOrWhiteSpace(settings.Auth0RefreshToken) ? defaultRefreshToken : settings.Auth0RefreshToken;
+            settings.AutoRefreshAfter = settings.AutoRefreshAfter == TimeSpan.MinValue ? defaultAutoRefreshAfter : settings.AutoRefreshAfter;
 
             // cache settings
             clientTokenCache.TryAdd(settings.Auth0ClientId, settings);
