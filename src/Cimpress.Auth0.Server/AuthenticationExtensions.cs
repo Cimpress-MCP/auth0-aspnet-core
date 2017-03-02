@@ -109,7 +109,7 @@ namespace Cimpress.Auth0.Server
             app.UseOpenIdConnectAuthentication(options.Value);
         }
 
-        public static void SetJwtBearer(this IApplicationBuilder app, Auth0Settings settings, Func<ClaimsIdentity, Task> onTokenValidated)
+        public static void SetJwtBearer(this IApplicationBuilder app, Auth0Settings settings, Func<ClaimsIdentity, Task> onTokenValidated, TokenValidationParameters tokenValidationParameters = null)
         {
             var options = new JwtBearerOptions()
             {
@@ -142,6 +142,10 @@ namespace Cimpress.Auth0.Server
                     }
                 }
             };
+            if (tokenValidationParameters != null)
+            {
+                options.TokenValidationParameters = tokenValidationParameters;
+            }
             app.UseJwtBearerAuthentication(options);
             
             // this is a hack, which hopefully will be solved with RC2 of .net core
