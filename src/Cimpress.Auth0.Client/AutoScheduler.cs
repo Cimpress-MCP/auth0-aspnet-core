@@ -25,7 +25,7 @@ namespace Cimpress.Auth0.Client
             // do not auto-refresh 
             if (auth0ClientSettings.AutoRefreshAfter <= TimeSpan.Zero)
             {
-                logger.LogDebug($"Not scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} " +
+                logger.LogInformation($"Not scheduling an automatic refresh of the Bearer token for client_id {auth0ClientSettings.Auth0ClientId} " +
                                 $"and auto-refresh settings {auth0ClientSettings.AutoRefreshAfter}.");
                 return;
             }
