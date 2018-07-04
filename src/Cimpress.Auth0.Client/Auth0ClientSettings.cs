@@ -64,6 +64,22 @@ namespace Cimpress.Auth0.Client
         /// The audience domain.
         /// </value>
         public string Auth0Audience { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the realm.
+        /// </summary>
+        /// <value>
+        /// The realm used for token authentication.
+        /// </value>
+        public string Auth0Realm { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the grant type.
+        /// </summary>
+        /// <value>
+        /// The grant type used for token authentication.
+        /// </value>
+        public string Auth0GrantType { get; set; }
 
         /// <summary>
         /// Gets or sets the auth0 refresh token.
