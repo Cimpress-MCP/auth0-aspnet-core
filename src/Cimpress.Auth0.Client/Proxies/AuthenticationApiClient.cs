@@ -46,6 +46,11 @@ namespace Cimpress.Auth0.Client.Proxies
             return PostAsync<AuthenticationResponseDto>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "oauth/ro", request);
         }
 
+        public Task<AuthenticationResponseDto> PasswordRealmAuthenticateAsync(PasswordRealmAuthenticationRequestDto request, string auth0Domain)
+        {
+            return PostAsync<AuthenticationResponseDto>(auth0Domain + (auth0Domain.EndsWith("/") ? "" : "/") + "oauth/token", request);
+        }
+
         /// <summary>
         /// Given an existing token, this endpoint will generate a new token signed with the target client secret. This is used to flow the identity of the user from the application to an API or across different APIs that are protected with different secrets.
         /// </summary>

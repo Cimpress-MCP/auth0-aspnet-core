@@ -19,6 +19,14 @@ namespace Cimpress.Auth0.Client.Proxies
         /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
         /// <returns>A <see cref="AuthenticationResponseDto" /> with the access token.</returns>
         Task<AuthenticationResponseDto> TokenAuthenticateAsync(TokenAuthenticationRequestDto request, string auth0Domain);
+        
+        /// <summary>
+        /// Given an <see cref="PasswordRealmAuthenticationRequestDto" />, it will do the authentication on the provider and return a <see cref="AuthenticationResponseDto" />
+        /// </summary>
+        /// <param name="request">The authentication request details containing information regarding the connection, user credentials etc.</param>
+        /// <param name="auth0Domain">The Auth0 domain to which to target the request to.</param>
+        /// <returns>A <see cref="AuthenticationResponseDto" /> with the access token.</returns>
+        Task<AuthenticationResponseDto> PasswordRealmAuthenticateAsync(PasswordRealmAuthenticationRequestDto request, string auth0Domain);
 
         /// <summary>
         /// Given an existing token, this endpoint will generate a new token signed with the target client secret. This is used to flow the identity of the user from the application to an API or across different APIs that are protected with different secrets.
