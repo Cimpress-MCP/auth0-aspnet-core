@@ -1,27 +1,24 @@
-function Build-Projects
+function Pack-Project
 {
     param([string] $DirectoryName)
 
     Push-Location $DirectoryName
-    $revision = @{ $true = $env:APPVEYOR_BUILD_VERSION; $false = "0.0.1" }[$env:APPVEYOR_BUILD_VERSION -ne $NULL];
-	Set-BuildVersion $DirectoryName $revision
-    & dotnet pack -c Release -o ..\..\.\artifacts --version-suffix $revision
+    & dotnet pack -c Release -o ..\..\.\artifacts
     if($LASTEXITCODE -ne 0) { exit 1 }    
     Pop-Location
 }
 
-function Set-BuildVersion
+function Update-BuildVersion
 {
-    param([string] $DirectoryName, [string]$revision)
-	
-    $projectJson = Join-Path $DirectoryName "project.json"
-    $jsonData = Get-Content -Path $projectJson -Raw | ConvertFrom-JSON
-	$jsonData.version = $revision
-    $jsonData | ConvertTo-Json -Depth 999 | Out-File $projectJson
-    Write-Host "Set version of $projectJson to $revision"
+    param([string] $FileName)
+
+    $revision = @{ $true = $env:APPVEYOR_BUILD_VERSION; $false = "0.0.1" }[$env:APPVEYOR_BUILD_VERSION -ne $NULL];	
+    $csprojContent = Get-Content $FileName
+    $csprojContent | % { $_.Replace("0.0.1", $revision) } | Set-Content $FileName
+    Write-Host "Set version of $FileName to $revision"
 }
 
-function Test-Projects
+function Test-Project
 {
     param([string] $DirectoryName)
 
@@ -36,13 +33,16 @@ Push-Location $PSScriptRoot
 # Clean
 if(Test-Path .\artifacts) { Remove-Item .\artifacts -Force -Recurse }
 
+# Modify version
+Get-ChildItem -Path .\src -Filter *.csproj -Recurse | ForEach-Object { Update-BuildVersion $_.FullName }
+
 # Package restore
-& dotnet restore --configfile ./nuget.config
+& dotnet restore
 
 # Build/package
-Get-ChildItem -Path .\src -Filter *.xproj -Recurse | ForEach-Object { Build-Projects $_.DirectoryName }
+Get-ChildItem -Path .\src -Filter *.csproj -Recurse | ForEach-Object { Pack-Project $_.DirectoryName }
 
 # Test
-Get-ChildItem -Path .\test -Filter *.xproj -Recurse | ForEach-Object { Test-Projects $_.DirectoryName }
+Get-ChildItem -Path .\test -Filter *.csproj -Recurse | ForEach-Object { Test-Project $_.DirectoryName }
 
 Pop-Location
