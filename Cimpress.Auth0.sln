@@ -1,20 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Cimpress.Auth0.Client.UnitTests", "test\Cimpress.Auth0.Client.UnitTests\Cimpress.Auth0.Client.UnitTests.xproj", "{0F165179-4960-461D-84C0-26E89580C106}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Cimpress.Auth0.Server", "src\Cimpress.Auth0.Server\Cimpress.Auth0.Server.xproj", "{FF120832-5C14-44CE-AC75-98F7C04C5B3B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Cimpress.Auth0.Client", "src\Cimpress.Auth0.Client\Cimpress.Auth0.Client.xproj", "{B102748C-01E5-4BD7-8FA5-DB82C238C89B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{1F7A7118-DAC9-4FF0-9750-13234358A7AE}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
 		build.ps1 = build.ps1
-		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cimpress.Auth0.Client.UnitTests", "test\Cimpress.Auth0.Client.UnitTests\Cimpress.Auth0.Client.UnitTests.csproj", "{0F165179-4960-461D-84C0-26E89580C106}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cimpress.Auth0.Server", "src\Cimpress.Auth0.Server\Cimpress.Auth0.Server.csproj", "{FF120832-5C14-44CE-AC75-98F7C04C5B3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cimpress.Auth0.Client", "src\Cimpress.Auth0.Client\Cimpress.Auth0.Client.csproj", "{B102748C-01E5-4BD7-8FA5-DB82C238C89B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E4F1D47-90F3-4C9C-A856-5DD3358BF93A}
 	EndGlobalSection
 EndGlobal
