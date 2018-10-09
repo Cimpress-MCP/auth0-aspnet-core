@@ -92,7 +92,7 @@ namespace Cimpress.Auth0.Server
                     OnTokenValidated = async notification =>
                     {
                         var claimsIdentity = notification.Ticket.Principal.Identity as ClaimsIdentity;
-                        logger.LogInformation($"{claimsIdentity?.Name} authenticated using bearer authentication.");
+                        logger.LogDebug($"{claimsIdentity?.Name} authenticated using bearer authentication.");
 
                         await onUserInformationReceived(claimsIdentity);
                     }
@@ -137,7 +137,7 @@ namespace Cimpress.Auth0.Server
                     {
                         var claimsIdentity = context.Ticket.Principal.Identity as ClaimsIdentity;
                         var sub = claimsIdentity?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                        logger.LogInformation($"'{sub}' authenticated using bearer authentication.", sub);
+                        logger.LogDebug($"'{sub}' authenticated using bearer authentication.", sub);
 
                         await onTokenValidated(claimsIdentity);
                     }
