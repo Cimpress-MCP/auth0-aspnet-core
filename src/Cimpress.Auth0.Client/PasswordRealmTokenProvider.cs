@@ -15,6 +15,7 @@ namespace Cimpress.Auth0.Client
         private readonly SemaphoreSlim syncObject = new SemaphoreSlim(1);
         private readonly IAuthenticationApiClient authenticationApiClient;
         private readonly ILogger logger;
+        public bool RefreshTokenWhenUnauthorized { get; set; } = true;
 
         public PasswordRealmTokenProvider(ILoggerFactory loggerFactory, Auth0ClientSettings currentSettings, IAuthenticationApiClient authenticationApiClient = null,
             IAutoScheduler autoScheduler = null)

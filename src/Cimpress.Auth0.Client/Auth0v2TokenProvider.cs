@@ -12,6 +12,7 @@ namespace Cimpress.Auth0.Client
         private readonly IAutoScheduler autoScheduler;
         private readonly string defaultClientSecret;
         private readonly string defaultAudience;
+        public bool RefreshTokenWhenUnauthorized { get; set; } = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Auth0v2TokenProvider" /> class.

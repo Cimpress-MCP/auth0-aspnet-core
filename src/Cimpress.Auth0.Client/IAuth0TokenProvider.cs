@@ -10,6 +10,11 @@ namespace Cimpress.Auth0.Client
     public interface IAuth0TokenProvider
     {
         /// <summary>
+        /// When the request fails with an Unauthorized http respose, attempt to refresh the token and then try again.
+        /// </summary>
+        bool RefreshTokenWhenUnauthorized { get; }
+
+        /// <summary>
         /// Adds or updates the client asynchronously.
         /// </summary>
         /// <param name="settings">The settings.</param>
