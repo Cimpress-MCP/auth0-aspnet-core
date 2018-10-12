@@ -14,6 +14,7 @@ namespace Cimpress.Auth0.Client
         private readonly string defaultUsername;
         private readonly string defaultPassword;
         private readonly string defaultConnection;
+        public bool RefreshTokenWhenUnauthorized { get; set; } = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Auth0TokenProvider" /> class.

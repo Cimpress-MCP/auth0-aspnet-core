@@ -41,7 +41,7 @@ namespace Cimpress.Auth0.Client
             }
 
             //retry in case of an expired token
-            if (response.StatusCode == HttpStatusCode.Unauthorized && Auth0TokenProvider != null)
+            if (Auth0TokenProvider != null && Auth0TokenProvider.RefreshTokenWhenUnauthorized && response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 Logger.LogWarning($"Unauthorized invocation of REST service at {request.RequestUri}. Trying to get a new auth0 token.");
 
@@ -62,8 +62,8 @@ namespace Cimpress.Auth0.Client
                 {
                     request.Headers.Authorization = await Auth0TokenProvider.GetAuthHeaderForClientAsync(Auth0ClientId);
                 }
-                // Maybe we already have a token for the host – then use it.
-                // If the host requires auth0 we’ll be noticed during 1st retry and can then extract the auth0 client id from the www-authentication header and use it for consecutive invocations.
+                // Maybe we already have a token for the host then use it.
+                // If the host requires auth0 we'll be noticed during 1st retry and can then extract the auth0 client id from the www-authentication header and use it for consecutive invocations.
                 else
                 {
                     var auth0Header = await Auth0TokenProvider.GetAuthHeaderForDomainAsync(request.RequestUri.Host);
